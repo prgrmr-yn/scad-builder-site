@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SCAD Builder</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700&family=DM+Mono&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+<div class="top"><h1>SCAD Builder</h1><span>Build with shapes, get OpenSCAD code. No account needed.</span><span id="saved" class="help" style="margin-left:auto"></span></div>
+<nav class="tools" aria-label="Tools">
+  <button id="undo" title="Undo (Ctrl+Z)">Undo</button><button id="redo" title="Redo (Ctrl+Y)">Redo</button><span class="sep"></span>
+  <button id="dup" title="Duplicate (Ctrl+D)">Duplicate</button><button id="del" title="Delete (Del)">Delete</button><button id="drop" title="Rest the shape on the current workplane">Drop to workplane</button><button id="wp" title="Pick a surface to build on (W). Click empty bed to go back to the bed.">Workplane</button><button id="alignbtn" title="Select shapes with Shift+click, then line them up">Align</button><span class="sep"></span>
+  <label>Snap <select id="snap"><option value="0">Off</option><option value="1" selected>1 mm</option><option value="2">2 mm</option><option value="5">5 mm</option><option value="10">10 mm</option></select></label>
+  <label>Printer <select id="bedsel"><option value="0,0">No bed</option><option value="220,220" selected>Ender 3 (220×220)</option><option value="250,210">Prusa MK4 (250×210)</option><option value="256,256">Bambu Lab (256×256)</option><option value="180,180">Small (180×180)</option></select></label>
+  <span id="warn" hidden></span><span class="sp"></span>
+  <button id="clear">Start over</button><button id="getcode" class="primary">Get the code</button>
+</nav>
+<main>
+<aside>
+  <h2>Add a shape</h2>
+  <div class="lib" id="lib"></div>
+  <h2>In your design</h2>
+  <div id="items"></div>
+</aside>
+<div id="vp">
+  <div class="views"><button data-v="iso" title="Default view">Home</button><button data-v="top">Top</button><button data-v="front">Front</button><button data-f="1" title="Zoom to selection (F)">Fit</button><button data-z="-1" aria-label="Zoom in">+</button><button data-z="1" aria-label="Zoom out">−</button><button id="qbtn" aria-label="Keyboard shortcuts" title="Shortcuts (?)">?</button></div>
+  <div class="hint">Drag a shape to move it. White squares resize, colored rings rotate. Shift+click to select several and align them. Press W to pick a surface.</div><div class="tip" id="tip" hidden></div><div class="dims" id="dims"></div><div class="toast" id="toast" hidden></div><div class="keys" id="keys" hidden><div><span>Select several</span><b>Shift+click</b></div><div><span>Undo / Redo</span><b>Ctrl+Z / Y</b></div><div><span>Copy / Paste</span><b>Ctrl+C / V</b></div><div><span>Duplicate</span><b>Ctrl+D</b></div><div><span>Select all</span><b>Ctrl+A</b></div><div><span>Delete</span><b>Del</b></div><div><span>Nudge (×10 with Shift)</span><b>Arrows</b></div><div><span>Workplane</span><b>W</b></div><div><span>Zoom to fit</span><b>F</b></div><div><span>Pan the view</span><b>Right-drag</b></div></div>
+  <div class="welcome" id="welcome"><div class="card">
+    <h2>Make something in three steps</h2>
+    <ol><li>Pick a shape on the left.</li><li>Drag it, resize it, or turn it into a Hole to cut material away.</li><li>Copy or download the OpenSCAD code.</li></ol>
+    <div class="starts"><span class="help">Or start from</span><button data-s="Pen cup">Pen cup</button><button data-s="Key tag">Key tag</button><button data-s="Snowman">Snowman</button></div>
+  </div></div>
+</div>
+<aside id="props"></aside>
+</main>
+<section id="codebox">
+  <div class="bar"><h2 style="margin:0">OpenSCAD code</h2>
+  <div><span id="msg"></span>
+  <label title="Tick values in Settings to choose which become variables"><input type="checkbox" id="vars" checked> Export with parameters</label><span id="pc" class="help"></span>
+  <label>Smoothness <input id="fn" type="number" min="8" max="200" value="64" style="width:64px"></label>
+  <button id="copy">Copy</button><button id="dl" class="primary">Download</button></div></div>
+  <textarea id="code" readonly spellcheck="false" aria-label="Generated OpenSCAD code"></textarea>
+  <p class="help" style="margin-top:6px">Open the file in OpenSCAD (free) and press F5 to preview.</p>
+</section>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="js/guard.js"></script>
+<script src="js/core.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/scad.js"></script>
+<script src="js/view.js"></script>
+<script src="js/tools.js"></script>
+<script src="js/boot.js"></script>
+</body>
+</html>
