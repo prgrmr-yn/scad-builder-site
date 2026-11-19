@@ -30,6 +30,14 @@ function renderAlign(el){
     L.forEach((t,m)=>{const b=document.createElement('button');b.textContent=t;b.title='Line up the '+t.toLowerCase()+' ('+a+')';b.onclick=()=>alignSel(i,m);r.appendChild(b)});
     w.appendChild(r);
   });
+  const gs=ids.map(id=>shapes.find(x=>x.id===id));
+  if(gs.length===2&&gs.every(g=>g.type==='gear')&&gs[0].p.m===gs[1].p.m){
+    const dist=f(gs[0].p.m*(gs[0].p.z+gs[1].p.z)/2),mb=document.createElement('div');mb.className='grp';
+    mb.innerHTML='<h2>Gears</h2><p class="help"></p><button>Mesh them</button>';
+    mb.querySelector('p').textContent='Centers should be '+dist+' mm apart.';
+    mb.querySelector('button').onclick=()=>{const a=gs[0],b=gs[1];b.pos=[f(a.pos[0]+dist),a.pos[1],a.pos[2]];b.rot=[0,0,b.p.z%2?0:f(180/b.p.z)];refresh();commit()};
+    w.appendChild(mb);
+  }
   el.appendChild(w);
 }
 $('#alignbtn').onclick=()=>{
@@ -75,12 +83,43 @@ function renderProps(){
   h.querySelector('.help').textContent=s.hole?'Cuts this shape out of your solids.':'Adds material to your design.';
   if(!s.hole){const cw=document.createElement('label');cw.className='help';cw.style.cssText='display:flex;gap:8px;align-items:center;margin-top:8px';cw.innerHTML='Color <input type="color" style="width:44px;height:26px;padding:0;border:1px solid var(--line);background:none">';const ci=cw.querySelector('input');ci.value=s.color||'#1396a8';ci.oninput=()=>{s.color=ci.value;update()};ci.onchange=commit;h.appendChild(cw)}
   h.querySelectorAll('.seg button').forEach(b=>{b.classList.toggle('on',(b.dataset.h==='1')===s.hole);b.onclick=()=>{s.hole=b.dataset.h==='1';refresh();commit()}});
+  if(s.type==='text'){
+    const tw=document.createElement('div');tw.className='grp';
+    tw.innerHTML='<h2>Text</h2><div class="row" style="grid-template-columns:16px 1fr"><input type="checkbox" id="txex" title="Export the words as an editable variable"><input type="text" id="txt" maxlength="80" aria-label="Text to write"></div><div class="trow"><select id="tfont" aria-label="Font"><option value="sans">Sans</option><option value="serif">Serif</option><option value="mono">Mono</option></select><label class="gh"><input type="checkbox" id="tbold"> Bold</label></div><div class="seg" role="group" aria-label="Alignment"><button data-a="left">Left</button><button data-a="center">Center</button><button data-a="right">Right</button></div>';
+    el.appendChild(tw);
+    const tx=tw.querySelector('#txt'),ex=tw.querySelector('#txex');tx.value=s.txt||'';ex.checked=!!s.ex.txt;
+    tx.oninput=()=>{s.txt=tx.value;update()};tx.onchange=commit;
+    ex.onchange=()=>{s.ex.txt=ex.checked;update();commit()};
+    const tf=tw.querySelector('#tfont');tf.value=s.font||'sans';tf.onchange=()=>{s.font=tf.value;update();commit()};
+    const tb=tw.querySelector('#tbold');tb.checked=!!s.bold;tb.onchange=()=>{s.bold=tb.checked;update();commit()};
+    tw.querySelectorAll('.seg button').forEach(b=>{b.classList.toggle('on',b.dataset.a===(s.align||'center'));b.onclick=()=>{s.align=b.dataset.a;renderProps();update();commit()}});
+  }
+  if(['rod','bolt','nut','tapped'].includes(s.type)){
+    const th=document.createElement('div');th.className='grp';
+    th.innerHTML='<h2>Thread</h2><div class="trow"><select id="tpre" aria-label="Thread size"></select><label class="gh"><input type="checkbox" id="tleft"> Left-hand</label></div>';
+    const sl=th.querySelector('#tpre'),cu=TH_PRESETS.find(q=>q[1]===s.p.d&&q[2]===s.p.pt);
+    sl.innerHTML='<option value="">Custom</option>'+TH_PRESETS.map(q=>'<option value="'+q[0]+'">'+q[0]+' (pitch '+q[2]+')</option>').join('');
+    sl.value=cu?cu[0]:'';
+    sl.onchange=()=>{const q=TH_PRESETS.find(x=>x[0]===sl.value);if(q){s.p.d=q[1];s.p.pt=q[2];if(s.type==='nut')s.p.h=f(.8*q[1]);renderProps();update();commit()}};
+    const lf=th.querySelector('#tleft');lf.checked=!!s.left;lf.onchange=()=>{s.left=lf.checked;update();commit()};
+    el.appendChild(th);
+  }
+  if(s.type==='gear'||s.type==='ringgear'){const gi=document.createElement('p');gi.className='help';gi.style.marginTop='10px';gi.textContent='Pitch diameter '+f(s.p.m*s.p.z)+' mm. A matching gear needs the same module.';el.appendChild(gi)}
   const g1=document.createElement('div');g1.className='grp';g1.appendChild(gh('Size (mm)',T[s.type].p.map(p=>p.k)));
-  T[s.type].p.forEach(p=>g1.appendChild(row(p.l,()=>s.p[p.k],v=>{v=Math.max(p.a,v);s.p[p.k]=p.k==='n'?Math.round(v):v},p.a,p.b,p.k==='n'?1:snap||1,p.k)));
+  T[s.type].p.forEach(p=>g1.appendChild(row(p.l,()=>s.p[p.k],v=>{v=Math.max(p.a,v);s.p[p.k]=(p.k==='n'||p.k==='z')?Math.round(v):v;fixS(s)},p.a,p.b,(p.k==='n'||p.k==='z')?1:(p.k==='sp'||p.k==='pt'||p.k==='c')?.05:p.k==='m'?.25:snap||1,p.k)));
   el.appendChild(g1);
   const g2=document.createElement('div');g2.className='grp';g2.appendChild(gh('Position (mm)',['pos_x','pos_y','pos_z']));
   ['X','Y','Z'].forEach((a,i)=>g2.appendChild(row(a==='Z'?'Z (base)':a,()=>s.pos[i],v=>s.pos[i]=f(v),-150,150,snap||1,'pos_'+a.toLowerCase())));el.appendChild(g2);
   const g3=document.createElement('div');g3.className='grp';g3.appendChild(gh('Rotation (degrees)',['rot_x','rot_y','rot_z']));
   ['X','Y','Z'].forEach((a,i)=>g3.appendChild(row(a,()=>s.rot[i],v=>s.rot[i]=f(v),-180,180,5,'rot_'+a.toLowerCase())));el.appendChild(g3);
+  const gt=document.createElement('div');gt.className='grp';
+  gt.innerHTML='<h2>Flip and repeat</h2><div class="seg" role="group" aria-label="Flip"><button data-f="0">Flip X</button><button data-f="1">Flip Y</button><button data-f="2">Flip Z</button></div><div class="trow"><select id="arrt" aria-label="Repeat"><option value="none">No repeat</option><option value="linear">Repeat in a line</option><option value="circular">Repeat in a circle</option></select></div>';
+  el.appendChild(gt);
+  s.mir=s.mir||[0,0,0];s.arr=s.arr||{t:'none',n:3,dx:30,dy:0,dz:0,cx:0,cy:0,sw:360};
+  gt.querySelectorAll('.seg button').forEach(b=>{const i=+b.dataset.f;b.classList.toggle('on',!!s.mir[i]);b.onclick=()=>{s.mir[i]=s.mir[i]?0:1;renderProps();update();commit()}});
+  const AR=s.arr,at=gt.querySelector('#arrt');at.value=AR.t;at.onchange=()=>{AR.t=at.value;renderProps();update();commit()};
+  const ar=(l,k,a,b,st)=>gt.appendChild(row(l,()=>AR[k],v=>{AR[k]=k==='n'?Math.round(v):v},a,b,st,'arr_'+k));
+  if(AR.t==='linear'){ar('Copies','n',2,30,1);ar('Gap X','dx',-150,150,snap||1);ar('Gap Y','dy',-150,150,snap||1);ar('Gap Z','dz',-150,150,snap||1)}
+  if(AR.t==='circular'){ar('Copies','n',2,60,1);ar('Sweep','sw',10,360,5);ar('Center X','cx',-150,150,snap||1);ar('Center Y','cy',-150,150,snap||1)}
   const tp=document.createElement('p');tp.className='help';tp.style.marginTop='10px';tp.textContent='Position is where the shape\u2019s bottom centre sits, so Z = 0 rests it on the workplane. Tick a box to make a value an editable variable in the exported code.';el.appendChild(tp);
 }

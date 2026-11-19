@@ -11,7 +11,7 @@
 <div class="top"><h1>SCAD Builder</h1><span>Build with shapes, get OpenSCAD code. No account needed.</span><span id="saved" class="help" style="margin-left:auto"></span></div>
 <nav class="tools" aria-label="Tools">
   <button id="undo" title="Undo (Ctrl+Z)">Undo</button><button id="redo" title="Redo (Ctrl+Y)">Redo</button><span class="sep"></span>
-  <button id="dup" title="Duplicate (Ctrl+D)">Duplicate</button><button id="del" title="Delete (Del)">Delete</button><button id="drop" title="Rest the shape on the current workplane">Drop to workplane</button><button id="wp" title="Pick a surface to build on (W). Click empty bed to go back to the bed.">Workplane</button><button id="alignbtn" title="Select shapes with Shift+click, then line them up">Align</button><span class="sep"></span>
+  <button id="dup" title="Duplicate (Ctrl+D)">Duplicate</button><button id="del" title="Delete (Del)">Delete</button><button id="drop" title="Rest the shape on the current workplane">Drop to workplane</button><button id="wp" title="Pick a surface to build on (W). Click empty bed to go back to the bed.">Workplane</button><button id="alignbtn" title="Select shapes with Shift+click, then line them up">Align</button><button id="libbtn" title="Browse ready-made models and save your own">Library</button><span class="sep"></span>
   <label>Snap <select id="snap"><option value="0">Off</option><option value="1" selected>1 mm</option><option value="2">2 mm</option><option value="5">5 mm</option><option value="10">10 mm</option></select></label>
   <label>Printer <select id="bedsel"><option value="0,0">No bed</option><option value="220,220" selected>Ender 3 (220×220)</option><option value="250,210">Prusa MK4 (250×210)</option><option value="256,256">Bambu Lab (256×256)</option><option value="180,180">Small (180×180)</option></select></label>
   <span id="warn" hidden></span><span class="sp"></span>
@@ -30,7 +30,7 @@
   <div class="welcome" id="welcome"><div class="card">
     <h2>Make something in three steps</h2>
     <ol><li>Pick a shape on the left.</li><li>Drag it, resize it, or turn it into a Hole to cut material away.</li><li>Copy or download the OpenSCAD code.</li></ol>
-    <div class="starts"><span class="help">Or start from</span><button data-s="Pen cup">Pen cup</button><button data-s="Key tag">Key tag</button><button data-s="Snowman">Snowman</button></div>
+    <div class="starts"><span class="help">Or start from</span><button data-s="Pen cup">Pen cup</button><button data-s="Key tag">Key tag</button><button data-s="Snowman">Snowman</button><button id="libbtn2">More in the library</button></div>
   </div></div>
 </div>
 <aside id="props"></aside>
@@ -44,6 +44,12 @@
   <textarea id="code" readonly spellcheck="false" aria-label="Generated OpenSCAD code"></textarea>
   <p class="help" style="margin-top:6px">Open the file in OpenSCAD (free) and press F5 to preview.</p>
 </section>
+<div class="modal" id="mlib" hidden><div class="mbox" role="dialog" aria-modal="true" aria-label="Model library">
+  <div class="mhead"><h2>Model library</h2><input type="text" id="lq" placeholder="Search models" aria-label="Search models"><button id="lx" aria-label="Close">Close</button></div>
+  <div class="chips" id="lchips"></div>
+  <div class="mgrid" id="lgrid"></div>
+  <div class="mfoot"><input type="text" id="lname" placeholder="Name your design" aria-label="Design name"><input type="text" id="lcatin" placeholder="Category (for sharing)" aria-label="Category"><button id="lsave">Save my design</button><button id="lexp">Export .json</button><button id="limp">Import .json</button><input type="file" id="lfile" accept=".json,application/json" hidden><span class="help" id="lmsg" role="status"></span></div>
+</div></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="js/guard.js"></script>
 <script src="js/core.js"></script>

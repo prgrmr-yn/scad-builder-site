@@ -1,0 +1,20 @@
+{
+ "name": "Washer",
+ "category": "Hardware",
+ "shapes": [
+  {
+   "type": "tube",
+   "name": "Washer",
+   "p": {
+    "h": 3,
+    "r": 12,
+    "w": 5
+   },
+   "pos": [
+    0,
+    0,
+    0
+   ]
+  }
+ ]
+}
